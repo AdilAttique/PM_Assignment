@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Tailoring{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-semibold mb-2 tracking-tight">Process Tailoring</h1>
+<form action="" method="get" class="flex gap-2 mb-4">
+  <select name="type" class="border rounded-lg px-3 py-2">
+    <option value="">Select project type</option>
+    <option value="IT" {% if project_type == 'IT' %}selected{% endif %}>IT</option>
+    <option value="Construction" {% if project_type == 'Construction' %}selected{% endif %}>Construction</option>
+    <option value="Research" {% if project_type == 'Research' %}selected{% endif %}>Research</option>
+  </select>
+  <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">Generate</button>
+  {% if project_type %}<a href="?" class="px-4 py-2 border rounded-lg bg-white">Clear</a>{% endif %}
+  </form>
+
+{% if recommendations %}
+<ul class="space-y-3">
+  {% for r in recommendations %}
+  <li class="bg-white border rounded p-3">
+    <div class="text-sm text-gray-600">{{ r.standard_title }} · Page {{ r.page_index }}</div>
+    <div class="text-sm mt-1">{{ r.snippet }}</div>
+    <a class="text-blue-600" href="{% url 'standards:page' r.standard_slug r.page_index %}">Open page</a>
+  </li>
+  {% endfor %}
+  </ul>
+{% elif project_type %}
+<div class="text-gray-500">No recommendations found.</div>
+{% endif %}
+
+{% if tailored %}
+<h2 class="text-xl font-semibold mt-8 mb-2">Lifecycle Tailoring with Evidence</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {% for t in tailored %}
+  <div class="bg-white border rounded p-3">
+    <div class="font-medium">{{ t.phase }}</div>
+    <ul class="mt-2 space-y-2 text-sm">
+      {% for e in t.evidence %}
+      <li>
+        <a class="text-blue-600" href="{% url 'standards:page' e.standard_slug e.page_index %}">{{ e.standard_title }} · Page {{ e.page_index }}</a>
+        <div class="text-gray-600">{{ e.snippet }}</div>
+      </li>
+      {% empty %}
+      <li class="text-gray-400">No evidence.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Insights{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-semibold mb-2 tracking-tight">Insights Dashboard</h1>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="bg-white border rounded p-4">
+    <div class="text-sm text-gray-500">Total Pages</div>
+    <div class="text-3xl font-semibold">{{ total_pages }}</div>
+  </div>
+  <div class="bg-white border rounded p-4 col-span-2">
+    <div class="text-sm text-gray-500 mb-2">Pages by Standard</div>
+    <table class="w-full text-sm">
+      <thead><tr><th class="text-left">Standard</th><th class="text-right">Pages</th></tr></thead>
+      <tbody>
+        {% for row in counts_by_standard %}
+        <tr>
+          <td class="py-1">{{ row.standard__title }}</td>
+          <td class="py-1 text-right">{{ row.count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="bg-white border rounded p-4 mt-6">
+  <div class="text-sm text-gray-500 mb-2">Lifecycle coverage (keyword counts)</div>
+  <canvas id="overlapChart" height="120"></canvas>
+</div>
+
+{% block scripts %}
+<script>
+  const overlaps = {{ overlaps|safe }};
+  // Build labels and datasets per standard found in first row
+  const standardsSet = new Set();
+  overlaps.forEach(o => { Object.keys(o.data).forEach(k => standardsSet.add(k)); });
+  const labels = overlaps.map(o => o.term);
+  const standards = Array.from(standardsSet);
+  const datasets = standards.map((std, i) => ({
+    label: std,
+    data: overlaps.map(o => (o.data[std] || 0)),
+    backgroundColor: `hsl(${(i*80)%360} 70% 60% / 0.6)`
+  }));
+  const ctx = document.getElementById('overlapChart');
+  if (ctx && standards.length) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+  }
+</script>
+{% endblock %}
+{% endblock %}
+
+

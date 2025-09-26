@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Library · PM Hub{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-semibold mb-2 tracking-tight">Standards Repository</h1>
+<p class="text-sm text-gray-600 mb-6">Click a standard to open the first page. Use search to find topics across all pages.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  {% for s in standards %}
+  <a class="card hover:shadow-md transition-shadow" href="{% url 'standards:page' s.slug 0 %}">
+    <div class="card-body">
+      <div class="font-medium line-clamp-2">{{ s.title }}</div>
+      <div class="text-xs text-gray-500 mt-1 uppercase">{{ s.source_type }}</div>
+      <div class="text-xs text-gray-500 mt-2">Pages: {{ s.pages.count }}</div>
+    </div>
+  </a>
+  {% empty %}
+  <div class="col-span-full text-gray-500">No standards ingested yet. Run the ingest command.</div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+

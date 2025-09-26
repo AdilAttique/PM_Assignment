@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-semibold mb-2 tracking-tight">Search</h1>
+<form action="" method="get" class="mb-4 flex gap-2">
+  <input name="q" value="{{ q }}" placeholder="Search terms (supports FTS)" class="border rounded-lg px-3 py-2 w-full" />
+  <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">Search</button>
+  {% if q %}<a href="?q=" class="px-4 py-2 border rounded-lg bg-white">Clear</a>{% endif %}
+  </form>
+
+{% if q and not results %}
+<div class="text-gray-500">No results.</div>
+{% endif %}
+
+<ul class="space-y-3">
+  {% for r in results %}
+  <li class="bg-white border rounded p-3">
+    <div class="text-xs text-gray-500">{{ r.page.standard.title }} · Page {{ r.page.page_index }}</div>
+    <div class="mt-2 text-sm leading-6">{{ r.highlight|safe }}</div>
+    <div class="mt-2">
+      <a class="text-blue-600" href="{% url 'standards:page' r.page.standard.slug r.page.page_index %}">Open page</a>
+    </div>
+  </li>
+  {% endfor %}
+  </ul>
+
+{% if page_obj %}
+<div class="flex items-center gap-2 mt-4">
+  {% if page_obj.has_previous %}
+    <a class="px-3 py-1 border rounded bg-white" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Prev</a>
+  {% endif %}
+  <span class="text-sm text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a class="px-3 py-1 border rounded bg-white" href="?q={{ q }}&page={{ page_obj.next_page_number }}">Next</a>
+  {% endif %}
+  </div>
+{% endif %}
+{% endblock %}
+
+

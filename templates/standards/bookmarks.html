@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Bookmarks{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Bookmarks</h1>
+<ul class="space-y-3">
+  {% for b in items %}
+  <li class="bg-white border rounded p-3 flex items-center justify-between">
+    <div>
+      <div class="text-sm">{{ b.page.standard.title }} · Page {{ b.page.page_index }}</div>
+      <div class="text-xs text-gray-500">{{ b.label }}</div>
+    </div>
+    <a class="text-blue-600" href="{% url 'standards:page' b.page.standard.slug b.page.page_index %}">Open</a>
+  </li>
+  {% empty %}
+  <li class="text-gray-500">No bookmarks yet.</li>
+  {% endfor %}
+  </ul>
+{% endblock %}
+
+
