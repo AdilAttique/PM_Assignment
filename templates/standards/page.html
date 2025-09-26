@@ -1,6 +1,20 @@
 {% extends 'base.html' %}
 {% block title %}{{ standard.title }} · Page {{ page.page_index }}{% endblock %}
 {% block content %}
+<style>
+  /* Reflow absolutely-positioned PDF HTML into readable flow */
+  .pdf-content [style*="position:absolute"] { position: static !important; left: auto !important; top: auto !important; }
+  .pdf-content [style*="float:"] { float: none !important; }
+  .pdf-content [style*="width:"] { max-width: 100% !important; }
+  .pdf-content [style*="height:"] { height: auto !important; max-height: none !important; }
+  .pdf-content [style*="min-height:"] { min-height: 0 !important; }
+  .pdf-content img { max-width: 100%; height: auto; }
+  .pdf-content { line-height: 1.7; font-size: 16px; max-width: 70ch; margin-left: auto; margin-right: auto; }
+  /* Normalize tiny inline font sizes emitted by pdfminer */
+  .pdf-content [style*="font-size:"] { font-size: inherit !important; }
+  .pdf-content div { margin-bottom: 0.25rem; }
+  .pdf-content div:empty { display: none; }
+</style>
 <div class="flex items-center gap-3 mb-4">
   <a class="text-blue-600" href="{% url 'standards:library' %}">← Back to Library</a>
   <div class="text-sm text-gray-500">{{ standard.title }}</div>
@@ -17,7 +31,25 @@
       </button>
     </form>
   </div>
-  <div class="prose max-w-none mt-4 leading-7">{{ html|safe }}</div>
+  {% if standard.source_type == 'pdf' and request.GET.mode != 'text' %}
+  <div class="mt-4">
+    <div class="text-xs text-gray-500 mb-2">
+      Exact PDF view (read-only). Use browser zoom if needed.
+      · <a class="text-blue-600" href="{% url 'standards:pdf_file' standard.slug %}#page={{ page.page_index|add:1 }}" target="_blank" rel="noopener">Open in new tab</a>
+      · <a class="text-blue-600" href="?mode=text">Switch to text view</a>
+    </div>
+    <object data="{% url 'standards:pdf_file' standard.slug %}#page={{ page.page_index|add:1 }}" type="application/pdf" class="w-full" style="height:80vh;">
+      <embed src="{% url 'standards:pdf_file' standard.slug %}#page={{ page.page_index|add:1 }}" type="application/pdf"/>
+    </object>
+  </div>
+  {% else %}
+  <div class="text-xs text-gray-500 mb-2">
+    {% if standard.source_type == 'pdf' %}
+      Parsed text view for searchability. <a class="text-blue-600" href="?">Back to exact PDF view</a>
+    {% endif %}
+  </div>
+  <div class="prose max-w-none mt-4 leading-7 pdf-content">{{ html|safe }}</div>
+  {% endif %}
 </div>
 
 <div class="flex justify-between mt-4">

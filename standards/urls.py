@@ -10,6 +10,7 @@ urlpatterns = [
     path("compare/", views.compare, name="compare"),
     path("insights/", views.insights, name="insights"),
     path("tailor/", views.tailor, name="tailor"),
+    path("pdf/<slug:slug>/", views.pdf_file, name="pdf_file"),
     path("<slug:slug>/page/<int:page_index>/", views.page_view, name="page"),
 ]
 

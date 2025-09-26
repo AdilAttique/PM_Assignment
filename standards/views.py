@@ -9,6 +9,9 @@ from .models import Standard, Page, Bookmark
 from rapidfuzz import fuzz
 import re
 import html as html_lib
+from django.http import FileResponse
+import mimetypes
+import os
 from django.conf import settings
 import sqlite3
 
@@ -75,6 +78,17 @@ def page_view(request: HttpRequest, slug: str, page_index: int) -> HttpResponse:
             "html": html,
         },
     )
+
+
+@require_GET
+def pdf_file(request: HttpRequest, slug: str) -> HttpResponse:
+    standard = get_object_or_404(Standard, slug=slug)
+    if standard.source_type != "pdf":
+        return HttpResponse(status=404)
+    ctype, _ = mimetypes.guess_type(standard.file_path)
+    resp = FileResponse(open(standard.file_path, "rb"), content_type=ctype or "application/pdf")
+    resp["Content-Disposition"] = f"inline; filename=\"{os.path.basename(standard.file_path)}\""
+    return resp
 
 
 @require_POST

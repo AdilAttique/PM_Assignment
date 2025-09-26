@@ -122,6 +122,13 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
 CSRF_TRUSTED_ORIGINS = ["http://localhost", "http://127.0.0.1"]
 
+# Media (for cached rendered PDF page images)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Allow embedding pages (like our inline PDF) on same-origin
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 

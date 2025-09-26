@@ -13,6 +13,10 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import HTMLConverter
 from io import BytesIO
+from pathlib import Path
+from django.conf import settings
+from PIL import Image
+import os
 
 from standards.models import Standard, Page
 
@@ -87,12 +91,45 @@ class Command(BaseCommand):
                     tag.decompose()
                 # Store HTML in chunks of roughly pages
                 body = soup.body or soup
-                text = body.get_text("\n", strip=False)
-                html_fragment = str(body)
-                texts.append(text)
-                # Save immediately as a page-equivalent
-                Page.objects.create(standard=standard, page_index=page_idx, content=text, content_html=html_fragment)
-                page_idx += 1
+                # Virtual pagination: split by block elements into ~1200-1600 char chunks
+                html_chunks: List[str] = []
+                current: List[str] = []
+                acc_len = 0
+                max_len = 1600
+                min_len = 800
+                block_tags = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "table", "pre", "blockqcouote", "img", "div"}
+                for child in list(body.children):
+                    if getattr(child, 'name', None) is None:
+                        # NavigableString
+                        text_piece = str(child)
+                        if text_piece.strip():
+                            current.append(text_piece)
+                            acc_len += len(text_piece)
+                        continue
+                    # Tag
+                    html_piece = str(child)
+                    current.append(html_piece)
+                    acc_len += len(child.get_text(" ", strip=False))
+                    if child.name in block_tags and acc_len >= min_len:
+                        html_chunks.append("".join(current))
+                        current = []
+                        acc_len = 0
+                if current:
+                    html_chunks.append("".join(current))
+
+                if not html_chunks:
+                    html_chunks = [str(body)]
+
+                for chunk in html_chunks:
+                    text = BeautifulSoup(chunk, "lxml").get_text("\n", strip=False)
+                    texts.append(text)
+                    Page.objects.create(
+                        standard=standard,
+                        page_index=page_idx,
+                        content=text,
+                        content_html=chunk,
+                    )
+                    page_idx += 1
         # If no items captured (rare), fallback to chunking concatenated text
         if not standard.pages.exists():
             full_text = "\n\n".join(texts)
