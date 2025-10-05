@@ -25,7 +25,8 @@ def ensure_session(request: HttpRequest) -> None:
 def library(request: HttpRequest) -> HttpResponse:
     ensure_session(request)
     standards = Standard.objects.all().order_by("title")
-    return render(request, "standards/library.html", {"standards": standards})
+    total_pages = Page.objects.count()
+    return render(request, "standards/library.html", {"standards": standards, "total_pages": total_pages})
 
 
 @require_GET
@@ -156,6 +157,7 @@ def compare(request: HttpRequest) -> HttpResponse:
     topic = (request.GET.get("topic") or "").strip()
     standards = list(Standard.objects.all().order_by("title"))
     hits = {s.slug: [] for s in standards}
+    
     if topic:
         db_path = settings.DATABASES["default"]["NAME"]
         with sqlite3.connect(db_path) as conn:
@@ -178,42 +180,78 @@ def compare(request: HttpRequest) -> HttpResponse:
                     "snippet": snippet,
                 })
 
-    # Derive similarities/differences based on fuzzy matching of snippets
-    similarity = []
-    unique = {s.slug: [] for s in standards}
+    # Enhanced similarities and differences analysis
+    similarities = []
+    differences = []
+    unique_points = {s.slug: [] for s in standards}
+    
     if topic:
-        # Compare first 20 snippets per standard
-        standardized = {k: v[:20] for k, v in hits.items()}
-        # Build pairwise similarities
-        for a in standards:
-            for b in standards:
-                if a.slug >= b.slug:
-                    continue
-                for sa in standardized[a.slug]:
-                    for sb in standardized[b.slug]:
-                        score = fuzz.token_set_ratio(sa["snippet"], sb["snippet"])  # type: ignore[arg-type]
-                        if score >= 80:
-                            similarity.append({
-                                "a": a,
-                                "b": b,
-                                "a_idx": sa["page_index"],
-                                "b_idx": sb["page_index"],
+        # Sample pages for comparison (first 30 per standard)
+        sample_pages = {k: v[:30] for k, v in hits.items()}
+        
+        # Find similarities (high overlap in content)
+        for i, standard_a in enumerate(standards):
+            for standard_b in standards[i+1:]:
+                for page_a in sample_pages[standard_a.slug]:
+                    for page_b in sample_pages[standard_b.slug]:
+                        score = fuzz.token_set_ratio(page_a["snippet"], page_b["snippet"])
+                        if score >= 75:  # High similarity threshold
+                            similarities.append({
+                                "standard_a": standard_a,
+                                "standard_b": standard_b,
+                                "page_a": page_a["page_index"],
+                                "page_b": page_b["page_index"],
                                 "score": score,
+                                "snippet_a": page_a["snippet"],
+                                "snippet_b": page_b["snippet"],
+                                "topic": topic
                             })
-        # Unique entries: snippets that don't reach threshold vs others
-        for s in standards:
-            others = [o for o in standards if o.slug != s.slug]
-            for sa in standardized[s.slug]:
+        
+        # Find differences (methodology-specific content)
+        methodology_keywords = {
+            "PMBOK": ["knowledge areas", "process groups", "deliverables", "stakeholder register", "work breakdown structure", "project charter", "scope statement"],
+            "PRINCE2": ["principles", "themes", "processes", "product-based planning", "stage boundaries", "project brief", "business case"],
+            "ISO 21500": ["process groups", "subject groups", "competences", "maturity", "governance", "project objectives", "stakeholder analysis"],
+            "ISO 21502": ["life cycle", "processes", "competences", "governance", "maturity", "project management system", "organizational capability"]
+        }
+        
+        for standard in standards:
+            for keyword_group, keywords in methodology_keywords.items():
+                if keyword_group in standard.title:
+                    for keyword in keywords:
+                        # Find pages containing this methodology-specific keyword
+                        for page in sample_pages[standard.slug]:
+                            if keyword.lower() in page["snippet"].lower():
+                                differences.append({
+                                    "standard": standard,
+                                    "keyword": keyword,
+                                    "page_index": page["page_index"],
+                                    "snippet": page["snippet"],
+                                    "category": f"{keyword_group} Specific",
+                                    "topic": topic
+                                })
+        
+        # Find unique points (low overlap with others)
+        for standard in standards:
+            others = [s for s in standards if s.slug != standard.slug]
+            for page in sample_pages[standard.slug][:20]:  # Check first 20 pages
                 max_score = 0
-                for o in others:
-                    for sb in standardized[o.slug]:
-                        max_score = max(max_score, fuzz.token_set_ratio(sa["snippet"], sb["snippet"]))
-                if max_score < 50:
-                    unique[s.slug].append(sa)
+                for other_standard in others:
+                    for other_page in sample_pages[other_standard.slug][:20]:
+                        score = fuzz.token_set_ratio(page["snippet"], other_page["snippet"])
+                        max_score = max(max_score, score)
+                
+                if max_score < 50:  # Low similarity = unique content
+                    unique_points[standard.slug].append({
+                        "page_index": page["page_index"],
+                        "snippet": page["snippet"],
+                        "uniqueness_score": 100 - max_score,
+                        "topic": topic
+                    })
 
-    # Build template-friendly lists to avoid dict indexing in templates
+    # Build template-friendly lists
     hits_list = [{"standard": s, "items": hits.get(s.slug, [])} for s in standards]
-    unique_list = [{"standard": s, "items": unique.get(s.slug, [])} for s in standards]
+    unique_list = [{"standard": s, "items": unique_points.get(s.slug, [])} for s in standards]
 
     return render(
         request,
@@ -222,7 +260,8 @@ def compare(request: HttpRequest) -> HttpResponse:
             "topic": topic,
             "standards": standards,
             "hits_list": hits_list,
-            "similarity": similarity,
+            "similarities": similarities[:15],  # Limit to top 15
+            "differences": differences[:20],   # Limit to top 20
             "unique_list": unique_list,
         },
     )
@@ -232,11 +271,15 @@ def compare(request: HttpRequest) -> HttpResponse:
 def insights(request: HttpRequest) -> HttpResponse:
     ensure_session(request)
     total_pages = Page.objects.count()
+    standards = list(Standard.objects.all().order_by("title"))
     counts_by_standard = (
         Page.objects.values("standard__title").order_by("standard__title").annotate(count=models.Count("id"))
     )
-    # Simple overlap estimate: pages containing common keywords of lifecycle
-    lifecycle_terms = ["initiation", "planning", "execution", "monitoring", "closing", "governance", "risk", "stakeholder"]
+    
+    # Enhanced lifecycle terms for better analysis
+    lifecycle_terms = ["initiation", "planning", "execution", "monitoring", "closing", "governance", "risk", "stakeholder", "quality", "communication", "change", "procurement"]
+    
+    # Get overlap data
     overlaps = []
     db_path = settings.DATABASES["default"]["NAME"]
     with sqlite3.connect(db_path) as conn:
@@ -257,14 +300,89 @@ def insights(request: HttpRequest) -> HttpResponse:
                 "term": term,
                 "data": {title: count for title, count in data},
             })
+    
+    # Calculate similarities, differences, and unique points
+    similarities = []
+    differences = []
+    unique_points = []
+    
+    # Sample pages from each standard for comparison
+    sample_pages = {}
+    for standard in standards:
+        pages = list(Page.objects.filter(standard=standard)[:50])  # Sample first 50 pages
+        sample_pages[standard.slug] = [
+            {
+                "page_index": page.page_index,
+                "content": page.content[:500],  # First 500 chars
+                "standard": standard
+            }
+            for page in pages
+        ]
+    
+    # Find similarities (high overlap in content)
+    for i, standard_a in enumerate(standards):
+        for standard_b in standards[i+1:]:
+            for page_a in sample_pages[standard_a.slug][:10]:  # Compare first 10 pages
+                for page_b in sample_pages[standard_b.slug][:10]:
+                    score = fuzz.token_set_ratio(page_a["content"], page_b["content"])
+                    if score >= 70:  # High similarity threshold
+                        similarities.append({
+                            "standard_a": standard_a,
+                            "standard_b": standard_b,
+                            "page_a": page_a["page_index"],
+                            "page_b": page_b["page_index"],
+                            "score": score,
+                            "topic": "Content Overlap"
+                        })
+    
+    # Find unique points (low overlap with others)
+    for standard in standards:
+        others = [s for s in standards if s.slug != standard.slug]
+        for page in sample_pages[standard.slug][:20]:  # Check first 20 pages
+            max_score = 0
+            for other_standard in others:
+                for other_page in sample_pages[other_standard.slug][:20]:
+                    score = fuzz.token_set_ratio(page["content"], other_page["content"])
+                    max_score = max(max_score, score)
+            
+            if max_score < 40:  # Low similarity = unique content
+                unique_points.append({
+                    "standard": standard,
+                    "page_index": page["page_index"],
+                    "uniqueness_score": 100 - max_score,
+                    "content_preview": page["content"][:200] + "..."
+                })
+    
+    # Find differences (methodology-specific terms)
+    methodology_terms = {
+        "PMBOK": ["knowledge areas", "process groups", "deliverables", "stakeholder register", "work breakdown structure"],
+        "PRINCE2": ["principles", "themes", "processes", "product-based planning", "stage boundaries"],
+        "ISO 21500": ["process groups", "subject groups", "competences", "maturity", "governance"],
+        "ISO 21502": ["life cycle", "processes", "competences", "governance", "maturity"]
+    }
+    
+    for standard in standards:
+        for term_group, terms in methodology_terms.items():
+            if term_group in standard.title:
+                for term in terms:
+                    differences.append({
+                        "standard": standard,
+                        "term": term,
+                        "category": "Methodology-Specific",
+                        "description": f"Unique to {term_group} methodology"
+                    })
 
     return render(
         request,
         "standards/insights.html",
         {
             "total_pages": total_pages,
+            "standards": standards,
             "counts_by_standard": list(counts_by_standard),
             "overlaps": overlaps,
+            "similarities": similarities[:10],  # Limit to top 10
+            "differences": differences[:15],   # Limit to top 15
+            "unique_points": unique_points[:20], # Limit to top 20
         },
     )
 

@@ -1,40 +1,287 @@
-{% extends 'base.html' %}
-{% block title %}Search{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Search Standards - PM Hub{% endblock %}
+
 {% block content %}
-<h1 class="text-3xl font-semibold mb-2 tracking-tight">Search</h1>
-<form action="" method="get" class="mb-4 flex gap-2">
-  <input name="q" value="{{ q }}" placeholder="Search terms (supports FTS)" class="border rounded-lg px-3 py-2 w-full" />
-  <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">Search</button>
-  {% if q %}<a href="?q=" class="px-4 py-2 border rounded-lg bg-white">Clear</a>{% endif %}
-  </form>
-
-{% if q and not results %}
-<div class="text-gray-500">No results.</div>
-{% endif %}
-
-<ul class="space-y-3">
-  {% for r in results %}
-  <li class="bg-white border rounded p-3">
-    <div class="text-xs text-gray-500">{{ r.page.standard.title }} · Page {{ r.page.page_index }}</div>
-    <div class="mt-2 text-sm leading-6">{{ r.highlight|safe }}</div>
-    <div class="mt-2">
-      <a class="text-blue-600" href="{% url 'standards:page' r.page.standard.slug r.page.page_index %}">Open page</a>
+<div class="space-y-12">
+  <!-- Enhanced Header Section -->
+  <div class="text-center space-y-6">
+    <div class="space-y-4">
+      <h1 class="text-5xl font-bold gradient-text">Search Standards</h1>
+      <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        Search across all project management standards with powerful full-text capabilities. 
+        Find specific topics, methodologies, and best practices across PMBOK, PRINCE2, and ISO standards.
+      </p>
     </div>
-  </li>
-  {% endfor %}
-  </ul>
-
-{% if page_obj %}
-<div class="flex items-center gap-2 mt-4">
-  {% if page_obj.has_previous %}
-    <a class="px-3 py-1 border rounded bg-white" href="?q={{ q }}&page={{ page_obj.previous_page_number }}">Prev</a>
-  {% endif %}
-  <span class="text-sm text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-  {% if page_obj.has_next %}
-    <a class="px-3 py-1 border rounded bg-white" href="?q={{ q }}&page={{ page_obj.next_page_number }}">Next</a>
-  {% endif %}
   </div>
-{% endif %}
+
+  <!-- Enhanced Search Form -->
+  <div class="max-w-5xl mx-auto">
+    <form method="get" class="space-y-6">
+      <div class="relative">
+        <!-- Enhanced Search Container with Shadow and Border -->
+        <div class="bg-white rounded-2xl shadow-xl border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 p-2">
+          <div class="flex items-center">
+            <!-- Left Search Icon -->
+            <div class="pl-6 pr-4 flex items-center">
+              <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+            </div>
+            
+            <!-- Search Input -->
+            <div class="flex-1">
+              <input 
+                name="q" 
+                value="{{ q }}" 
+                placeholder="Search for topics like 'risk management', 'stakeholder engagement', 'quality control'..." 
+                class="w-full text-lg py-4 px-2 bg-transparent border-none outline-none text-gray-700 placeholder-gray-500 font-medium"
+              />
+            </div>
+            
+            <!-- Right Action Buttons -->
+            <div class="flex items-center gap-3 pr-4">
+              {% if q %}
+              <a href="{% url 'standards:search' %}?q=" class="btn-secondary px-4 py-2 flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Clear
+              </a>
+              {% endif %}
+              <button type="submit" class="btn-primary px-8 py-3 flex items-center gap-2 text-lg font-semibold shadow-lg hover:shadow-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Search Results -->
+  {% if q %}
+  {% if results %}
+  <div class="space-y-8">
+    <!-- Results Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-900">Search Results</h2>
+        <p class="text-lg text-gray-600 mt-2">
+          {% if page_obj %}
+            Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} results for "<span class="font-semibold text-blue-600">{{ q }}</span>"
+          {% else %}
+            {{ results|length }} results for "<span class="font-semibold text-blue-600">{{ q }}</span>"
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <!-- Results Grid -->
+    <div class="space-y-6">
+      {% for r in results %}
+      <div class="card group">
+        <div class="card-body space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-6a1 1 0 00-1-1H9a1 1 0 00-1 1v6a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-gray-900">{{ r.page.standard.title }}</h3>
+                  <p class="text-sm text-gray-500">Page {{ r.page.page_index|add:1 }}</p>
+                </div>
+              </div>
+              
+              <div class="prose prose-sm max-w-none">
+                <p class="text-gray-700 leading-relaxed">{{ r.highlight|safe }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div class="flex items-center gap-4 text-sm text-gray-500">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>{{ r.page.standard.source_type|upper }}</span>
+              </div>
+            </div>
+            
+            <a href="{% url 'standards:page' r.page.standard.slug r.page.page_index %}" class="btn-primary flex items-center gap-2 group-hover:scale-105 transition-transform duration-300">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+              View Page
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Enhanced Pagination -->
+    {% if page_obj %}
+    <div class="flex items-center justify-center gap-4 mt-12">
+      {% if page_obj.has_previous %}
+        <a href="?q={{ q }}&page={{ page_obj.previous_page_number }}" class="btn-outline flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Previous
+        </a>
+      {% endif %}
+      
+      <div class="flex items-center gap-1">
+        {% for num in page_obj.paginator.page_range %}
+          {% if num == page_obj.number %}
+            <span class="px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold">{{ num }}</span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?q={{ q }}&page={{ num }}" class="px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors font-medium">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+      </div>
+      
+      {% if page_obj.has_next %}
+        <a href="?q={{ q }}&page={{ page_obj.next_page_number }}" class="btn-outline flex items-center gap-2">
+          Next
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <!-- Enhanced No Results State -->
+  <div class="text-center space-y-8 py-16">
+    <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center mx-auto">
+      <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+    </div>
+    
+    <div class="space-y-4">
+      <h2 class="text-3xl font-bold text-gray-900">No Results Found</h2>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        No results found for "<span class="font-semibold text-blue-600">{{ q }}</span>". 
+        Try different keywords or check your spelling.
+      </p>
+    </div>
+
+    <div class="card max-w-2xl mx-auto">
+      <div class="card-body">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="space-y-3">
+            <h3 class="text-lg font-semibold text-gray-900">Search Tips</h3>
+            <div class="space-y-2 text-gray-600 text-left">
+              <ul class="space-y-1 text-sm">
+                <li>• Try broader terms like "project management" or "risk"</li>
+                <li>• Use specific methodology names like "PMBOK" or "PRINCE2"</li>
+                <li>• Search for process phases like "initiation" or "planning"</li>
+                <li>• Try alternative spellings or synonyms</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% else %}
+  <!-- Enhanced Search Suggestions -->
+  <div class="space-y-8">
+    <div class="text-center space-y-4">
+      <h2 class="text-3xl font-bold text-gray-900">Popular Search Topics</h2>
+      <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+        Start exploring by searching for these common project management topics across all standards.
+      </p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
+      <a href="?q=risk management" class="card group hover:scale-105 transition-all duration-300">
+        <div class="card-body text-center space-y-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mx-auto">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Risk Management</h3>
+        </div>
+      </a>
+      
+      <a href="?q=stakeholder engagement" class="card group hover:scale-105 transition-all duration-300">
+        <div class="card-body text-center space-y-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mx-auto">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Stakeholder Engagement</h3>
+        </div>
+      </a>
+      
+      <a href="?q=quality control" class="card group hover:scale-105 transition-all duration-300">
+        <div class="card-body text-center space-y-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Quality Control</h3>
+        </div>
+      </a>
+      
+      <a href="?q=project planning" class="card group hover:scale-105 transition-all duration-300">
+        <div class="card-body text-center space-y-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Project Planning</h3>
+        </div>
+      </a>
+      
+      <a href="?q=change management" class="card group hover:scale-105 transition-all duration-300">
+        <div class="card-body text-center space-y-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mx-auto">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Change Management</h3>
+        </div>
+      </a>
+      
+      <a href="?q=communication" class="card group hover:scale-105 transition-all duration-300">
+        <div class="card-body text-center space-y-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-gray-900">Communication</h3>
+        </div>
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}
-
-

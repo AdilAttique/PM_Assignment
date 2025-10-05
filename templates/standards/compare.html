@@ -1,65 +1,351 @@
-{% extends 'base.html' %}
-{% block title %}Comparison{% endblock %}
-{% block content %}
-<h1 class="text-3xl font-semibold mb-2 tracking-tight">Comparison Engine</h1>
-<form action="" method="get" class="mb-4 flex gap-2">
-  <input name="topic" value="{{ topic }}" placeholder="Topic e.g. Risk, Stakeholder" class="border rounded-lg px-3 py-2 w-full" />
-  <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">Compare</button>
-  {% if topic %}<a href="?" class="px-4 py-2 border rounded-lg bg-white">Clear</a>{% endif %}
-  </form>
+{% extends "base.html" %}
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-  {% for entry in hits_list %}
-  <div class="bg-white border rounded p-3">
-    <div class="font-medium">{{ entry.standard.title }}</div>
-    <ul class="mt-2 space-y-2 text-sm">
-      {% for h in entry.items %}
-      <li>
-        <a class="text-blue-600" href="{% url 'standards:page' entry.standard.slug h.page_index %}">Page {{ h.page_index }}</a>
-        <div class="text-gray-600">{{ h.snippet }}</div>
-      </li>
-      {% empty %}
-      <li class="text-gray-400">No hits.</li>
+{% block title %}Compare Standards - PM Hub{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+  <!-- Enhanced Header Section -->
+  <div class="text-center space-y-6">
+    <div class="space-y-4">
+      <h1 class="text-5xl font-bold gradient-text">Compare Standards</h1>
+      <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        Analyze and compare project management methodologies side-by-side. 
+        Discover similarities, differences, and unique approaches across PMBOK, PRINCE2, and ISO standards.
+      </p>
+    </div>
+  </div>
+
+  <!-- Enhanced Comparison Form -->
+  <div class="max-w-5xl mx-auto">
+    <form method="get" class="space-y-6">
+      <div class="relative">
+        <!-- Enhanced Search Container with Shadow and Border -->
+        <div class="bg-white rounded-2xl shadow-xl border-2 border-gray-100 hover:border-green-200 transition-all duration-300 p-2">
+          <div class="flex items-center">
+            <!-- Left Search Icon -->
+            <div class="pl-6 pr-4 flex items-center">
+              <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+            </div>
+            
+            <!-- Search Input -->
+            <div class="flex-1">
+              <input 
+                name="topic" 
+                value="{{ topic }}" 
+                placeholder="Enter a topic to compare (e.g., 'risk management', 'stakeholder engagement', 'quality control')..." 
+                class="w-full text-lg py-4 px-2 bg-transparent border-none outline-none text-gray-700 placeholder-gray-500 font-medium"
+              />
+            </div>
+            
+            <!-- Right Action Buttons -->
+            <div class="flex items-center gap-3 pr-4">
+              {% if topic %}
+              <a href="{% url 'standards:compare' %}" class="btn-secondary px-4 py-2 flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Clear
+              </a>
+              {% endif %}
+              <button type="submit" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-3 text-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Compare Standards
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+  </form>
+  </div>
+
+  {% if topic %}
+  <!-- Comparison Results Header -->
+  <div class="text-center">
+    <h2 class="text-3xl font-bold text-gray-900 mb-2">Comparison Results for</h2>
+    <div class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+      <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+      </svg>
+      <span class="text-xl font-semibold text-blue-900">{{ topic|title }}</span>
+    </div>
+  </div>
+
+  <!-- Single Row Standards Comparison Grid -->
+  <div class="space-y-8">
+    <h3 class="text-2xl font-bold text-gray-900 text-center">Standards Comparison Grid</h3>
+    
+    <!-- All 4 Standards in Single Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {% for hit in hits_list %}
+      <div class="bg-white border-2 border-gray-200 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+        <!-- Standard Header -->
+        <div class="bg-gradient-to-r {% if 'PMBOK' in hit.standard.title %}from-blue-500 to-blue-600{% elif 'PRINCE2' in hit.standard.title %}from-green-500 to-green-600{% elif 'ISO 21500' in hit.standard.title %}from-purple-500 to-purple-600{% elif 'ISO 21502' in hit.standard.title %}from-orange-500 to-orange-600{% endif %} p-4 text-white">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-lg">{{ hit.standard.title }}</h4>
+              <p class="text-sm opacity-90">{{ hit.items|length }} matches found</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="p-4 max-h-96 overflow-y-auto">
+          {% if hit.items %}
+            <div class="space-y-3">
+              {% for item in hit.items %}
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                <div class="text-sm text-gray-700 leading-relaxed mb-2">{{ item.snippet|safe }}</div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500">Page {{ item.page_index|add:1 }}</span>
+                  <a href="{% url 'standards:page' hit.standard.slug item.page_index %}" class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                    View Source
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-8">
+              <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <p class="text-gray-500 text-sm">No content found for this topic</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
       {% endfor %}
-    </ul>
+    </div>
+</div>
+
+  <!-- Similarities Section -->
+  {% if similarities %}
+  <div class="space-y-6">
+    <div class="text-center">
+      <h3 class="text-3xl font-bold text-gray-900 mb-2">Similarities Found</h3>
+      <p class="text-gray-600">Common approaches and overlapping guidance across standards</p>
+    </div>
+    
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-lg p-6">
+      <div class="max-h-96 overflow-y-auto space-y-4">
+        {% for sim in similarities %}
+        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-lg font-bold text-gray-900">{{ sim.standard_a.title }} ↔ {{ sim.standard_b.title }}</h4>
+              <p class="text-sm text-gray-600">Similarity Score: <span class="font-semibold text-yellow-700">{{ sim.score|floatformat:1 }}%</span></p>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="p-3 bg-white rounded-lg border border-yellow-200">
+              <h5 class="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <div class="w-5 h-5 bg-blue-100 rounded flex items-center justify-center">
+                  <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                  </svg>
+                </div>
+                {{ sim.standard_a.title }}
+              </h5>
+              <p class="text-xs text-gray-600 mb-2">Page {{ sim.page_a|add:1 }}</p>
+              <p class="text-xs text-gray-700 bg-blue-50 p-2 rounded mb-2">{{ sim.snippet_a|truncatewords:20 }}</p>
+              <a href="{% url 'standards:page' sim.standard_a.slug sim.page_a %}" class="text-blue-600 hover:text-blue-700 font-medium text-xs inline-flex items-center gap-1">
+                View Source
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+              </a>
+            </div>
+            
+            <div class="p-3 bg-white rounded-lg border border-yellow-200">
+              <h5 class="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <div class="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
+                  <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                  </svg>
+                </div>
+                {{ sim.standard_b.title }}
+              </h5>
+              <p class="text-xs text-gray-600 mb-2">Page {{ sim.page_b|add:1 }}</p>
+              <p class="text-xs text-gray-700 bg-green-50 p-2 rounded mb-2">{{ sim.snippet_b|truncatewords:20 }}</p>
+              <a href="{% url 'standards:page' sim.standard_b.slug sim.page_b %}" class="text-green-600 hover:text-green-700 font-medium text-xs inline-flex items-center gap-1">
+                View Source
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
   </div>
   {% endfor %}
 </div>
-
-{% if similarity %}
-<h2 class="text-xl font-semibold mt-8 mb-2">Similarities</h2>
-<ul class="space-y-2 text-sm">
-  {% for s in similarity %}
-  <li class="bg-white border rounded p-3">
-    <div class="text-gray-700">{{ s.a.title }} ↔ {{ s.b.title }} ({{ s.score }}%)</div>
-    <div class="mt-1">
-      <a class="text-blue-600" href="{% url 'standards:page' s.a.slug s.a_idx %}">Open {{ s.a.title }} page {{ s.a_idx }}</a>
-      ·
-      <a class="text-blue-600" href="{% url 'standards:page' s.b.slug s.b_idx %}">Open {{ s.b.title }} page {{ s.b_idx }}</a>
     </div>
-  </li>
+  </div>
+  {% endif %}
+
+  <!-- Differences Section -->
+  {% if differences %}
+  <div class="space-y-6">
+    <div class="text-center">
+      <h3 class="text-3xl font-bold text-gray-900 mb-2">Methodology Differences</h3>
+      <p class="text-gray-600">Unique terminologies and methodologies specific to each standard</p>
+    </div>
+    
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-lg p-6">
+      <div class="max-h-96 overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {% for diff in differences %}
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:bg-gray-100 transition-colors">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-8 h-8 bg-gradient-to-br {% if 'PMBOK' in diff.standard.title %}from-blue-500 to-blue-600{% elif 'PRINCE2' in diff.standard.title %}from-green-500 to-green-600{% elif 'ISO 21500' in diff.standard.title %}from-purple-500 to-purple-600{% elif 'ISO 21502' in diff.standard.title %}from-orange-500 to-orange-600{% endif %} rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 text-sm">{{ diff.standard.title }}</h3>
+                <p class="text-xs text-gray-500">{{ diff.category }}</p>
+              </div>
+            </div>
+            
+            <div class="space-y-2">
+              <h4 class="font-semibold text-gray-800 text-sm">{{ diff.keyword|title }}</h4>
+              <p class="text-xs text-gray-600 mb-2">Page {{ diff.page_index|add:1 }}</p>
+              <p class="text-xs text-gray-700 bg-gray-100 p-2 rounded mb-2">{{ diff.snippet|truncatewords:15 }}</p>
+              <a href="{% url 'standards:page' diff.standard.slug diff.page_index %}" class="text-blue-600 hover:text-blue-700 font-medium text-xs inline-flex items-center gap-1">
+                View Source
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+              </a>
+            </div>
+          </div>
   {% endfor %}
-</ul>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endif %}
 
-<h2 class="text-xl font-semibold mt-8 mb-2">Unique Points</h2>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-  {% for entry in unique_list %}
-  <div class="bg-white border rounded p-3">
-    <div class="font-medium">{{ entry.standard.title }}</div>
-    <ul class="mt-2 space-y-2 text-sm">
-      {% for h in entry.items %}
-      <li>
-        <a class="text-blue-600" href="{% url 'standards:page' entry.standard.slug h.page_index %}">Page {{ h.page_index }}</a>
-        <div class="text-gray-600">{{ h.snippet }}</div>
-      </li>
-      {% empty %}
-      <li class="text-gray-400">None detected.</li>
-      {% endfor %}
-    </ul>
+  <!-- Unique Points Section -->
+  {% if unique_list %}
+  <div class="space-y-6">
+    <div class="text-center">
+      <h3 class="text-3xl font-bold text-gray-900 mb-2">Unique Points</h3>
+      <p class="text-gray-600">Distinctive content and approaches found only in specific standards</p>
+    </div>
+    
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-lg p-6">
+      <div class="max-h-96 overflow-y-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {% for unique in unique_list %}
+          {% if unique.items %}
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:bg-gray-100 transition-colors">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-8 h-8 bg-gradient-to-br {% if 'PMBOK' in unique.standard.title %}from-blue-500 to-blue-600{% elif 'PRINCE2' in unique.standard.title %}from-green-500 to-green-600{% elif 'ISO 21500' in unique.standard.title %}from-purple-500 to-purple-600{% elif 'ISO 21502' in unique.standard.title %}from-orange-500 to-orange-600{% endif %} rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-6a1 1 0 00-1-1H9a1 1 0 00-1 1v6a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 text-sm">{{ unique.standard.title }}</h3>
+                <p class="text-xs text-gray-500">{{ unique.items|length }} unique points</p>
+              </div>
+            </div>
+            
+            <div class="space-y-2">
+              {% for item in unique.items %}
+              <div class="p-2 bg-white rounded border border-gray-200">
+                <p class="text-xs text-gray-600 mb-1">Page {{ item.page_index|add:1 }} - Uniqueness: {{ item.uniqueness_score|floatformat:1 }}%</p>
+                <p class="text-xs text-gray-700 leading-relaxed mb-2">{{ item.snippet|truncatewords:12 }}</p>
+                <a href="{% url 'standards:page' unique.standard.slug item.page_index %}" class="text-blue-600 hover:text-blue-700 font-medium text-xs inline-flex items-center gap-1">
+                  View Source
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
   </div>
-  {% endfor %}
+  {% endif %}
+
+  {% else %}
+  <!-- Start Comparing Standards Section -->
+  <div class="text-center space-y-8">
+    <div class="space-y-4">
+      <h2 class="text-3xl font-bold text-gray-900">Start Comparing Standards</h2>
+      <p class="text-gray-600 text-lg">Enter a topic above to begin your comparison analysis</p>
+    </div>
+    
+    <div class="max-w-4xl mx-auto">
+      <h3 class="text-xl font-semibold text-gray-800 mb-6">Popular Comparison Topics</h3>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <a href="?topic=risk management" class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-lg transition-all duration-200 text-center group">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 transition-colors">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
+          <h4 class="font-semibold text-gray-900">Risk Management</h4>
+        </a>
+        
+        <a href="?topic=stakeholder engagement" class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-green-300 hover:shadow-lg transition-all duration-200 text-center group">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200 transition-colors">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+          </div>
+          <h4 class="font-semibold text-gray-900">Stakeholder Engagement</h4>
+        </a>
+        
+        <a href="?topic=quality control" class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-purple-300 hover:shadow-lg transition-all duration-200 text-center group">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-colors">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h4 class="font-semibold text-gray-900">Quality Control</h4>
+        </a>
+        
+        <a href="?topic=project planning" class="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-orange-300 hover:shadow-lg transition-all duration-200 text-center group">
+          <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-orange-200 transition-colors">
+            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+            </svg>
+          </div>
+          <h4 class="font-semibold text-gray-900">Project Planning</h4>
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
-
-

@@ -15,51 +15,163 @@
   .pdf-content div { margin-bottom: 0.25rem; }
   .pdf-content div:empty { display: none; }
 </style>
-<div class="flex items-center gap-3 mb-4">
-  <a class="text-blue-600" href="{% url 'standards:library' %}">← Back to Library</a>
-  <div class="text-sm text-gray-500">{{ standard.title }}</div>
+
+<!-- Breadcrumb Navigation -->
+<div class="flex items-center gap-2 mb-6 text-sm">
+  <a href="{% url 'standards:library' %}" class="text-blue-600 hover:text-blue-700 flex items-center gap-1">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+    </svg>
+    Library
+  </a>
+  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+  </svg>
+  <span class="text-gray-600">{{ standard.title }}</span>
+  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+  </svg>
+  <span class="text-gray-900 font-medium">Page {{ page.page_index }}</span>
 </div>
 
-<div class="bg-white border rounded-xl p-4 shadow-sm">
-  <div class="flex items-center justify-between">
-    <div class="text-sm text-gray-600">Page {{ page.page_index }}</div>
-    <form action="{% url 'standards:toggle_bookmark' page.id %}" method="post">
-      {% csrf_token %}
-      <input type="hidden" name="next" value="{{ request.get_full_path }}" />
-      <button class="px-3 py-1 rounded border {% if has_bookmark %}bg-yellow-100{% endif %}">
-        {% if has_bookmark %}Bookmarked{% else %}Bookmark{% endif %}
-      </button>
-    </form>
-  </div>
-  {% if standard.source_type == 'pdf' and request.GET.mode != 'text' %}
-  <div class="mt-4">
-    <div class="text-xs text-gray-500 mb-2">
-      Exact PDF view (read-only). Use browser zoom if needed.
-      · <a class="text-blue-600" href="{% url 'standards:pdf_file' standard.slug %}#page={{ page.page_index|add:1 }}" target="_blank" rel="noopener">Open in new tab</a>
-      · <a class="text-blue-600" href="?mode=text">Switch to text view</a>
+<!-- Page Header -->
+<div class="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-semibold text-gray-900">{{ standard.title }}</h1>
+                        <p class="text-sm text-gray-500">Page {{ page.page_index }}</p>
+      </div>
     </div>
-    <object data="{% url 'standards:pdf_file' standard.slug %}#page={{ page.page_index|add:1 }}" type="application/pdf" class="w-full" style="height:80vh;">
+    
+    <div class="flex items-center gap-3">
+      <form action="{% url 'standards:toggle_bookmark' page.id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+        <button class="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors {% if has_bookmark %}bg-yellow-100 text-yellow-800 border border-yellow-200{% else %}bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200{% endif %}">
+          <svg class="w-4 h-4" fill="{% if has_bookmark %}currentColor{% else %}none{% endif %}" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+          </svg>
+          {% if has_bookmark %}Bookmarked{% else %}Bookmark{% endif %}
+        </button>
+      </form>
+      
+      {% if standard.source_type == 'pdf' %}
+      <div class="flex items-center gap-2">
+        {% if request.GET.mode != 'text' %}
+        <a href="?mode=text" class="btn-outline text-sm">Text View</a>
+        {% else %}
+        <a href="?" class="btn-outline text-sm">PDF View</a>
+        {% endif %}
+        <a href="{% url 'standards:pdf_file' standard.slug %}#page={{ page.page_index|add:1 }}" target="_blank" rel="noopener" class="btn-outline text-sm flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+          </svg>
+          Open PDF
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  {% if standard.source_type == 'pdf' and request.GET.mode != 'text' %}
+  <div class="bg-gray-50 rounded-lg p-4">
+    <div class="flex items-center gap-2 mb-3">
+      <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <span class="text-sm font-medium text-gray-700">PDF Document View</span>
+    </div>
+    <p class="text-sm text-gray-600 mb-3">Viewing the original PDF document. Use browser zoom controls if needed for better readability.</p>
+    <object data="{% url 'standards:pdf_file' standard.slug %}#page={{ page.page_index|add:1 }}" type="application/pdf" class="w-full rounded-lg border" style="height:80vh;">
       <embed src="{% url 'standards:pdf_file' standard.slug %}#page={{ page.page_index|add:1 }}" type="application/pdf"/>
     </object>
   </div>
   {% else %}
-  <div class="text-xs text-gray-500 mb-2">
-    {% if standard.source_type == 'pdf' %}
-      Parsed text view for searchability. <a class="text-blue-600" href="?">Back to exact PDF view</a>
-    {% endif %}
+  <div class="bg-gray-50 rounded-lg p-4 mb-4">
+    <div class="flex items-center gap-2 mb-2">
+      <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <span class="text-sm font-medium text-gray-700">Text Content</span>
+    </div>
+    <p class="text-sm text-gray-600">Parsed text content for better searchability and readability.</p>
   </div>
-  <div class="prose max-w-none mt-4 leading-7 pdf-content">{{ html|safe }}</div>
+  
+  <div class="prose max-w-none leading-7 pdf-content">{{ html|safe }}</div>
   {% endif %}
 </div>
 
-<div class="flex justify-between mt-4">
-  {% if prev_index is not None %}
-  <a class="px-3 py-2 border rounded bg-white" href="{% url 'standards:page' standard.slug prev_index %}">← Previous</a>
-  {% else %}<span></span>{% endif %}
-  {% if next_index is not None %}
-  <a class="px-3 py-2 border rounded bg-white" href="{% url 'standards:page' standard.slug next_index %}">Next →</a>
-  {% endif %}
+<!-- Navigation -->
+<div class="flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    {% if prev_index is not None %}
+    <a href="{% url 'standards:page' standard.slug prev_index %}{% if request.GET.mode %}?mode={{ request.GET.mode }}{% endif %}" class="btn-outline flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+      Previous Page
+    </a>
+    {% else %}
+    <div class="px-4 py-2 text-gray-400 border border-gray-200 rounded-lg">Previous Page</div>
+    {% endif %}
   </div>
+  
+  <div class="flex items-center gap-2">
+    <span class="text-sm text-gray-500">Page {{ page.page_index }}</span>
+    <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+    <span class="text-sm text-gray-500">{{ standard.pages.count }} total</span>
+  </div>
+  
+  <div class="flex items-center gap-3">
+    {% if next_index is not None %}
+    <a href="{% url 'standards:page' standard.slug next_index %}{% if request.GET.mode %}?mode={{ request.GET.mode }}{% endif %}" class="btn-outline flex items-center gap-2">
+      Next Page
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </a>
+    {% else %}
+    <div class="px-4 py-2 text-gray-400 border border-gray-200 rounded-lg">Next Page</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+  <div class="flex items-center gap-3 mb-4">
+    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+    <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+  </div>
+  
+  <div class="flex flex-wrap gap-3">
+    <a href="{% url 'standards:search' %}?q=" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+      Search All Standards
+    </a>
+    <a href="{% url 'standards:compare' %}" class="inline-flex items-center px-3 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+      </svg>
+      Compare Standards
+    </a>
+    <a href="{% url 'standards:bookmarks' %}" class="inline-flex items-center px-3 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+      </svg>
+      View Bookmarks
+    </a>
+  </div>
+</div>
 {% endblock %}
 
 
