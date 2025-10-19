@@ -26,10 +26,10 @@
             </svg>
           </div>
           <select name="type" id="type" class="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white shadow-sm hover:shadow-md">
-            <option value="">Choose a project type...</option>
-            <option value="IT" {% if project_type == 'IT' %}selected{% endif %}>IT & Software Development</option>
-            <option value="Construction" {% if project_type == 'Construction' %}selected{% endif %}>Construction & Engineering</option>
-            <option value="Research" {% if project_type == 'Research' %}selected{% endif %}>Research & Development</option>
+            <option value="">Choose a project scenario...</option>
+            <option value="custom_software" {% if project_type == 'custom_software' %}selected{% endif %}>Custom Software Development Project</option>
+            <option value="innovative_product" {% if project_type == 'innovative_product' %}selected{% endif %}>Innovative Product Development Project</option>
+            <option value="government_project" {% if project_type == 'government_project' %}selected{% endif %}>Large Government Project</option>
           </select>
         </div>
       </div>
@@ -171,6 +171,218 @@
 </div>
 {% endif %}
 
+{% if process_design %}
+<!-- Comprehensive Process Design -->
+<div class="card mt-8">
+  <div class="card-body">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h2 class="text-xl font-semibold text-gray-900">Comprehensive Process Design</h2>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3">
+        <button onclick="generateProcessDiagram()" class="btn-primary flex items-center gap-2 text-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          View Diagram
+        </button>
+        <button onclick="generateProcessDocument()" class="btn-success flex items-center gap-2 text-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Download Document
+        </button>
+      </div>
+    </div>
+    
+    <!-- Process Overview -->
+    <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Process Overview</h3>
+          <p class="text-gray-700 mb-4">{{ process_design.tailoring_rationale }}</p>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <span class="text-sm font-medium text-gray-700">Governance Model:</span>
+          </div>
+          <p class="text-sm text-gray-600 mt-1">{{ process_design.governance_model }}</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Standards Integration</h3>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <span class="text-sm text-gray-700">PMBOK Guide 7th Edition</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span class="text-sm text-gray-700">PRINCE2 2023</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+              <span class="text-sm text-gray-700">ISO 21500:2021</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+              <span class="text-sm text-gray-700">ISO 21502:2020</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Process Phases -->
+    <div class="space-y-6">
+      {% for phase in process_design.phases %}
+      <div class="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold">
+              {{ forloop.counter }}
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">{{ phase.name }}</h3>
+              <p class="text-sm text-gray-500">Duration: {{ phase.duration }}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+              Phase {{ forloop.counter }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Activities -->
+          <div>
+            <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+              </svg>
+              Key Activities
+            </h4>
+            <ul class="space-y-2">
+              {% for activity in phase.activities %}
+              <li class="flex items-start gap-2 text-sm text-gray-700">
+                <div class="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <span>{{ activity }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          
+          <!-- Roles -->
+          <div>
+            <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+              Key Roles
+            </h4>
+            <div class="flex flex-wrap gap-2">
+              {% for role in phase.roles %}
+              <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">{{ role }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+          <!-- Artifacts -->
+          <div>
+            <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Key Artifacts
+            </h4>
+            <div class="flex flex-wrap gap-2">
+              {% for artifact in phase.artifacts %}
+              <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">{{ artifact }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          
+          <!-- Decision Gates -->
+          <div>
+            <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Decision Gates
+            </h4>
+            <div class="flex flex-wrap gap-2">
+              {% for gate in phase.decision_gates %}
+              <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-medium">{{ gate }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Standards References -->
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            Standards References
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {% for standard, reference in phase.standards_references.items %}
+            <div class="bg-gray-50 rounded-lg p-3">
+              <div class="flex items-center gap-2 mb-1">
+                {% if standard == "PMBOK" %}
+                  <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                {% elif standard == "PRINCE2" %}
+                  <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                {% elif standard == "ISO 21502" %}
+                  <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                {% endif %}
+                <span class="text-xs font-medium text-gray-700">{{ standard }}</span>
+              </div>
+              <p class="text-xs text-gray-600">{{ reference }}</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Process Diagram Modal -->
+<div id="diagramModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+    <div class="flex items-center justify-between p-6 border-b">
+      <h3 class="text-xl font-semibold text-gray-900">Process Workflow Diagram</h3>
+      <button onclick="closeDiagramModal()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6 overflow-auto max-h-[calc(90vh-120px)]">
+      <div id="processDiagram" class="w-full h-96 bg-gray-50 rounded-lg flex items-center justify-center">
+        <div class="text-center text-gray-500">
+          <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          <p>Loading process diagram...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {% if not project_type %}
 <div class="text-center py-12">
   <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,34 +392,331 @@
   <h3 class="text-lg font-medium text-gray-900 mb-2">Start Tailoring Your Process</h3>
   <p class="text-gray-500 mb-6">Select a project type above to generate customized process recommendations based on evidence from PM standards.</p>
   
-  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 max-w-2xl mx-auto">
-    <h4 class="text-lg font-semibold text-gray-900 mb-3">Supported Project Types</h4>
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 max-w-4xl mx-auto">
+    <h4 class="text-lg font-semibold text-gray-900 mb-3">Supported Project Scenarios</h4>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="text-center p-4 bg-white rounded-lg border">
         <svg class="w-8 h-8 text-blue-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
         </svg>
-        <h5 class="font-medium text-gray-900">IT & Software</h5>
-        <p class="text-sm text-gray-500 mt-1">Agile methodologies, sprint planning, change management</p>
-      </div>
-      <div class="text-center p-4 bg-white rounded-lg border">
-        <svg class="w-8 h-8 text-green-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-        </svg>
-        <h5 class="font-medium text-gray-900">Construction</h5>
-        <p class="text-sm text-gray-500 mt-1">Safety protocols, procurement, site management</p>
+        <h5 class="font-medium text-gray-900">Custom Software Development</h5>
+        <p class="text-sm text-gray-500 mt-1">Well-defined requirements, &lt;6 months, &lt;7 team members. Lightweight process optimized for speed and flexibility.</p>
       </div>
       <div class="text-center p-4 bg-white rounded-lg border">
         <svg class="w-8 h-8 text-purple-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
         </svg>
-        <h5 class="font-medium text-gray-900">Research</h5>
-        <p class="text-sm text-gray-500 mt-1">Experimental design, ethics review, hypothesis testing</p>
+        <h5 class="font-medium text-gray-900">Innovative Product Development</h5>
+        <p class="text-sm text-gray-500 mt-1">R&D-heavy, uncertain outcomes, ~1 year duration. Hybrid adaptive process balancing innovation, iteration, and stakeholder management.</p>
+      </div>
+      <div class="text-center p-4 bg-white rounded-lg border">
+        <svg class="w-8 h-8 text-green-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+        </svg>
+        <h5 class="font-medium text-gray-900">Large Government Project</h5>
+        <p class="text-sm text-gray-500 mt-1">Civil, electrical, and IT components, 2-year duration. Comprehensive process covering governance, compliance, procurement, risk management, and reporting.</p>
       </div>
     </div>
   </div>
 </div>
 {% endif %}
+
+{% block scripts %}
+<script>
+// Process Diagram and Document Generation
+let currentProjectType = '{{ project_type }}';
+
+function generateProcessDiagram() {
+    if (!currentProjectType) {
+        alert('Please select a project type first');
+        return;
+    }
+    
+    // Show modal
+    document.getElementById('diagramModal').classList.remove('hidden');
+    
+    // Fetch diagram data
+    fetch(`/standards/process-diagram/?type=${currentProjectType}`)
+        .then(response => response.json())
+        .then(data => {
+            renderProcessDiagram(data);
+        })
+        .catch(error => {
+            console.error('Error loading diagram:', error);
+            document.getElementById('processDiagram').innerHTML = `
+                <div class="text-center text-red-500">
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>Error loading process diagram</p>
+                </div>
+            `;
+        });
+}
+
+function renderProcessDiagram(data) {
+    const container = document.getElementById('processDiagram');
+    
+    // Create a simple flowchart using HTML/CSS
+    let html = `
+        <div class="w-full h-full overflow-auto">
+            <div class="text-center mb-6">
+                <h4 class="text-lg font-semibold text-gray-900">${data.title}</h4>
+                <p class="text-sm text-gray-600">${data.context}</p>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-6 p-6">
+    `;
+    
+    data.phases.forEach((phase, index) => {
+        const isLast = index === data.phases.length - 1;
+        html += `
+            <div class="flex items-center">
+                <div class="bg-white border-2 border-gray-200 rounded-xl p-4 shadow-lg min-w-[200px] max-w-[250px]">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                            ${index + 1}
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-gray-900 text-sm">${phase.name}</h5>
+                            <p class="text-xs text-gray-500">${phase.duration}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div>
+                            <h6 class="text-xs font-medium text-gray-700 mb-1">Key Activities:</h6>
+                            <ul class="text-xs text-gray-600 space-y-1">
+                                ${phase.activities.slice(0, 3).map(activity => `<li>• ${activity}</li>`).join('')}
+                                ${phase.activities.length > 3 ? `<li class="text-gray-400">+${phase.activities.length - 3} more...</li>` : ''}
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h6 class="text-xs font-medium text-gray-700 mb-1">Key Roles:</h6>
+                            <div class="flex flex-wrap gap-1">
+                                ${phase.roles.slice(0, 2).map(role => `<span class="px-1 py-0.5 bg-green-100 text-green-800 rounded text-xs">${role}</span>`).join('')}
+                                ${phase.roles.length > 2 ? `<span class="text-xs text-gray-400">+${phase.roles.length - 2}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${!isLast ? `
+                    <div class="mx-4 flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function closeDiagramModal() {
+    document.getElementById('diagramModal').classList.add('hidden');
+}
+
+function generateProcessDocument() {
+    if (!currentProjectType) {
+        alert('Please select a project type first');
+        return;
+    }
+    
+    // Show loading state
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = `
+        <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        Generating...
+    `;
+    button.disabled = true;
+    
+    // Fetch document data
+    fetch(`/standards/process-document/?type=${currentProjectType}`)
+        .then(response => response.json())
+        .then(data => {
+            downloadProcessDocument(data);
+        })
+        .catch(error => {
+            console.error('Error generating document:', error);
+            alert('Error generating process document');
+        })
+        .finally(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+}
+
+function downloadProcessDocument(data) {
+    // Create a comprehensive HTML document
+    let html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${data.title}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; color: #333; }
+        .header { border-bottom: 3px solid #3B82F6; padding-bottom: 20px; margin-bottom: 30px; }
+        .section { margin-bottom: 30px; }
+        .phase { border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #f9fafb; }
+        .phase-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .phase-number { background: linear-gradient(135deg, #3B82F6, #8B5CF6); color: white; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; }
+        .tag { background: #e5e7eb; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin: 2px; display: inline-block; }
+        .standards-ref { background: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .decision { background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .implementation { background: #ecfdf5; padding: 15px; border-radius: 8px; }
+        @media print { body { margin: 20px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${data.title}</h1>
+        <p><strong>Generated:</strong> ${data.metadata.generated_date}</p>
+        <p><strong>Context:</strong> ${data.metadata.context}</p>
+        <p><strong>Focus:</strong> ${data.metadata.focus}</p>
+    </div>
+
+    <div class="section">
+        <h2>Executive Summary</h2>
+        <p><strong>Tailoring Rationale:</strong> ${data.executive_summary.tailoring_rationale}</p>
+        <p><strong>Governance Model:</strong> ${data.executive_summary.governance_model}</p>
+        
+        <h3>Key Characteristics</h3>
+        <ul>
+            ${data.executive_summary.key_characteristics.map(char => `<li>${char}</li>`).join('')}
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Process Phases</h2>
+        ${data.process_phases.map((phase, index) => `
+            <div class="phase">
+                <div class="phase-header">
+                    <div class="phase-number">${index + 1}</div>
+                    <div>
+                        <h3>${phase.name}</h3>
+                        <p><strong>Duration:</strong> ${phase.duration}</p>
+                    </div>
+                </div>
+                
+                <div class="grid">
+                    <div>
+                        <h4>Key Activities</h4>
+                        <ul>
+                            ${phase.activities.map(activity => `<li>${activity}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Key Roles</h4>
+                        ${phase.roles.map(role => `<span class="tag">${role}</span>`).join('')}
+                    </div>
+                </div>
+                
+                <div class="grid">
+                    <div>
+                        <h4>Key Artifacts</h4>
+                        ${phase.artifacts.map(artifact => `<span class="tag">${artifact}</span>`).join('')}
+                    </div>
+                    <div>
+                        <h4>Decision Gates</h4>
+                        ${phase.decision_gates.map(gate => `<span class="tag">${gate}</span>`).join('')}
+                    </div>
+                </div>
+                
+                <div class="standards-ref">
+                    <h4>Standards References</h4>
+                    ${Object.entries(phase.standards_references).map(([standard, reference]) => `
+                        <p><strong>${standard}:</strong> ${reference}</p>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('')}
+    </div>
+
+    <div class="section">
+        <h2>Tailoring Decisions</h2>
+        ${data.tailoring_decisions.map(decision => `
+            <div class="decision">
+                <h4>${decision.decision}</h4>
+                <p><strong>Rationale:</strong> ${decision.rationale}</p>
+                <p><strong>Standards Basis:</strong> ${decision.standards_basis}</p>
+            </div>
+        `).join('')}
+    </div>
+
+    <div class="section">
+        <h2>Implementation Guidance</h2>
+        <div class="implementation">
+            <h3>Team Structure</h3>
+            <p>${data.implementation_guidance.team_structure}</p>
+            
+            <h3>Recommended Tools</h3>
+            <ul>
+                ${data.implementation_guidance.tools_recommended.map(tool => `<li>${tool}</li>`).join('')}
+            </ul>
+            
+            <h3>Success Metrics</h3>
+            <ul>
+                ${data.implementation_guidance.success_metrics.map(metric => `<li>${metric}</li>`).join('')}
+            </ul>
+            
+            <h3>Key Risks</h3>
+            <ul>
+                ${data.implementation_guidance.risks.map(risk => `<li>${risk}</li>`).join('')}
+            </ul>
+            
+            <h3>Mitigation Strategies</h3>
+            <ul>
+                ${data.implementation_guidance.mitigation_strategies.map(strategy => `<li>${strategy}</li>`).join('')}
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Standards Mapping</h2>
+        ${Object.entries(data.standards_mapping).map(([standard, mappings]) => `
+            <h3>${standard}</h3>
+            ${mappings.map(mapping => `
+                <div style="margin-left: 20px; margin-bottom: 15px;">
+                    <h4>${mapping.phase}</h4>
+                    <p><strong>Reference:</strong> ${mapping.reference}</p>
+                    <p><strong>Activities:</strong> ${mapping.activities.join(', ')}</p>
+                    <p><strong>Artifacts:</strong> ${mapping.artifacts.join(', ')}</p>
+                </div>
+            `).join('')}
+        `).join('')}
+    </div>
+</body>
+</html>
+    `;
+    
+    // Create and download the file
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${data.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}
 {% endblock %}
 
 

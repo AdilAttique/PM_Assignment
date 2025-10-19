@@ -392,21 +392,57 @@ def tailor(request: HttpRequest) -> HttpResponse:
     ensure_session(request)
     project_type = (request.GET.get("type") or "").strip()
     recommendations = []
-    phases = [
-        ("Initiation", ["charter", "case", "scope", "stakeholder", "sponsor", "mandate"]),
-        ("Planning", ["plan", "schedule", "cost", "resource", "risk", "quality", "communications"]),
-        ("Execution", ["deliverable", "work package", "team", "leadership", "manage work"]),
-        ("Monitoring & Control", ["monitor", "control", "variance", "change", "issue", "metrics"]),
-        ("Closing", ["close", "handover", "benefits", "transition", "retrospective"]),
-    ]
+    
+    # Define the three specific project scenarios from assignment document
+    scenarios = {
+        "custom_software": {
+            "name": "Custom Software Development Project",
+            "context": "Well-defined requirements, <6 months, <7 team members",
+            "focus": "Lightweight process optimized for speed and flexibility",
+            "keywords": ["agile", "iteration", "sprint", "software", "development", "scrum", "kanban", "continuous", "integration", "deployment"],
+            "phases": [
+                ("Project Initiation", ["initiation", "charter", "stakeholder", "requirements", "team", "risk"]),
+                ("Planning & Design", ["planning", "design", "architecture", "backlog", "sprint", "quality"]),
+                ("Development & Testing", ["development", "testing", "integration", "sprint", "demonstration", "monitoring"]),
+                ("Deployment & Closure", ["deployment", "closure", "training", "documentation", "handover", "lessons"])
+            ]
+        },
+        "innovative_product": {
+            "name": "Innovative Product Development Project", 
+            "context": "R&D-heavy, uncertain outcomes, ~1 year duration",
+            "focus": "Hybrid adaptive process balancing innovation, iteration, and stakeholder management",
+            "keywords": ["enterprise", "system", "implementation", "business case", "stakeholder", "governance", "compliance", "integration"],
+            "phases": [
+                ("Pre-Project & Initiation", ["pre-project", "initiation", "business case", "stakeholder", "governance", "compliance"]),
+                ("Planning & Design", ["planning", "design", "requirements", "architecture", "migration", "quality"]),
+                ("Implementation", ["implementation", "configuration", "integration", "testing", "training", "compliance"]),
+                ("Deployment & Transition", ["deployment", "transition", "production", "monitoring", "benefits", "closure"])
+            ]
+        },
+        "government_project": {
+            "name": "Large Government Project",
+            "context": "Civil, electrical, and IT components, 2-year duration", 
+            "focus": "Comprehensive process covering governance, compliance, procurement, risk management, and reporting",
+            "keywords": ["infrastructure", "upgrade", "procurement", "contract", "regulation", "audit", "reporting", "stakeholder", "risk", "management"],
+            "phases": [
+                ("Project Initiation", ["initiation", "assessment", "charter", "stakeholder", "requirements", "procurement"]),
+                ("Detailed Planning & Design", ["planning", "design", "wbs", "schedule", "quality", "safety", "vendor"]),
+                ("Procurement & Preparation", ["procurement", "preparation", "equipment", "site", "training", "change"]),
+                ("Implementation & Testing", ["implementation", "testing", "installation", "configuration", "performance", "security"]),
+                ("Deployment & Closure", ["deployment", "closure", "production", "monitoring", "handover", "lessons"])
+            ]
+        }
+    }
+    
     tailored = []
-    if project_type:
-        keywords = {
-            "it": ["agile", "iteration", "change", "software", "sprint"],
-            "construction": ["contract", "site", "safety", "procurement"],
-            "research": ["experiment", "hypothesis", "review", "ethics"],
-        }.get(project_type.lower(), [project_type])
+    process_design = None
+    
+    if project_type and project_type in scenarios:
+        scenario = scenarios[project_type]
+        keywords = scenario["keywords"]
         query = " OR ".join(keywords)
+        
+        # Get general recommendations
         db_path = settings.DATABASES["default"]["NAME"]
         with sqlite3.connect(db_path) as conn:
             cur = conn.cursor()
@@ -430,8 +466,9 @@ def tailor(request: HttpRequest) -> HttpResponse:
                     "page_index": pidx,
                     "snippet": snippet,
                 })
-        # Build a phase-oriented tailoring suggestion list with evidence
-        for phase_name, phase_terms in phases:
+        
+        # Build phase-oriented tailoring with evidence
+        for phase_name, phase_terms in scenario["phases"]:
             evidence = []
             db_path = settings.DATABASES["default"]["NAME"]
             with sqlite3.connect(db_path) as conn:
@@ -460,10 +497,583 @@ def tailor(request: HttpRequest) -> HttpResponse:
                         "snippet": snippet,
                     })
             tailored.append({"phase": phase_name, "evidence": evidence})
+        
+        # Generate comprehensive process design
+        process_design = generate_process_design(scenario, project_type)
+    
     return render(
         request,
         "standards/tailor.html",
-        {"project_type": project_type, "recommendations": recommendations, "tailored": tailored},
+        {
+            "project_type": project_type, 
+            "recommendations": recommendations, 
+            "tailored": tailored,
+            "scenarios": scenarios,
+            "process_design": process_design
+        },
     )
+
+
+def generate_process_design(scenario, project_type):
+    """Generate comprehensive process design for the given scenario"""
+    
+    # Define process components based on scenario from assignment document
+    if project_type == "custom_software":
+        return {
+            "phases": [
+                {
+                    "name": "Project Initiation",
+                    "duration": "1-2 weeks",
+                    "activities": [
+                        "Identify and engage stakeholders",
+                        "Validate and document all requirements",
+                        "Form the project team and define roles",
+                        "Create the project charter",
+                        "Conduct initial risk analysis and plan mitigations"
+                    ],
+                    "roles": ["Project Manager", "Product Owner", "Stakeholders", "Development Team Lead"],
+                    "artifacts": ["Project Charter", "Stakeholder Register", "Requirements Document", "Risk Register", "Team Structure Document"],
+                    "decision_gates": ["Gate 1 – Approval of project and confirmation of resource allocation"],
+                    "standards_references": {
+                        "PMBOK": "Stakeholder, Team, Development Approach domains",
+                        "PRINCE2": "Initiation process with lightweight business case",
+                        "ISO 21500": "Initiating process group with stakeholder analysis"
+                    }
+                },
+                {
+                    "name": "Planning & Design",
+                    "duration": "2-3 weeks",
+                    "activities": [
+                        "Conduct sprint planning and create backlog",
+                        "Develop the technical architecture design",
+                        "Map user stories and define acceptance criteria",
+                        "Plan for quality assurance and testing",
+                        "Establish communication and reporting plan"
+                    ],
+                    "roles": ["Product Owner", "Scrum Master", "Technical Lead", "QA Lead"],
+                    "artifacts": ["Product Backlog", "Sprint Plan", "Technical Architecture Document", "User Stories with Acceptance Criteria", "Quality Assurance Plan"],
+                    "decision_gates": ["Gate 2 – Approval of design and readiness for development"],
+                    "standards_references": {
+                        "PMBOK": "Planning domain with iterative approach",
+                        "PRINCE2": "Planning process with agile plans",
+                        "ISO 21500": "Planning process group with quality management"
+                    }
+                },
+                {
+                    "name": "Development & Testing",
+                    "duration": "12-16 weeks",
+                    "activities": [
+                        "Perform iterative development in 2-week sprints",
+                        "Carry out continuous integration and testing",
+                        "Conduct regular stakeholder demonstrations",
+                        "Monitor risks and resolve issues",
+                        "Manage changes and version control"
+                    ],
+                    "roles": ["Development Team", "Scrum Master", "Product Owner", "QA Team"],
+                    "artifacts": ["Working Software Increments", "Test and Quality Reports", "Sprint Reviews", "Updated Risk Register", "Change Requests"],
+                    "decision_gates": ["Gates 3a–3f – End-of-sprint evaluations for continuation or adjustment"],
+                    "standards_references": {
+                        "PMBOK": "Project Work, Delivery, Measurement domains",
+                        "PRINCE2": "Delivery via sprints with continuous testing",
+                        "ISO 21500": "Executing and Monitoring process groups"
+                    }
+                },
+                {
+                    "name": "Deployment & Closure",
+                    "duration": "1-2 weeks",
+                    "activities": [
+                        "Conduct user acceptance testing (UAT)",
+                        "Deploy the system to production",
+                        "Provide user training and documentation",
+                        "Execute project closure and lessons learned activities"
+                    ],
+                    "roles": ["Project Manager", "Development Team", "Users", "Support Team"],
+                    "artifacts": ["Deployed Software System", "User Documentation", "Project Closure Report", "Lessons Learned Document", "Support Transition Plan"],
+                    "decision_gates": ["Gate 4 – Final approval for project completion and handover"],
+                    "standards_references": {
+                        "PMBOK": "Delivery domain with value delivery focus",
+                        "PRINCE2": "Closure process with lessons learned",
+                        "ISO 21500": "Closing process group with benefits realization"
+                    }
+                }
+            ],
+            "tailoring_rationale": "Iterative approach for moderate complexity with experienced team. Incremental delivery via working software with simplified documentation and frequent checkpoints.",
+            "governance_model": "Self-organizing teams with minimal overhead, regular sprint reviews for stakeholder engagement."
+        }
+    
+    elif project_type == "innovative_product":
+        return {
+            "phases": [
+                {
+                    "name": "Pre-Project & Initiation",
+                    "duration": "2-3 months",
+                    "activities": [
+                        "Develop and approve business case",
+                        "Conduct comprehensive stakeholder analysis",
+                        "Prepare project charter and mandate",
+                        "Establish governance and oversight structures",
+                        "Review initial risks and compliance factors",
+                        "Select vendors and finalize contracts"
+                    ],
+                    "roles": ["Project Director", "Business Analyst", "Compliance Officer", "Stakeholder Manager", "Procurement Manager"],
+                    "artifacts": ["Approved Business Case", "Project Charter and Mandate", "Governance Structure Document", "Stakeholder Register and Analysis", "Initial Risk Register", "Compliance Framework", "Vendor Contracts"],
+                    "decision_gates": ["Gate 1 – Authorization and funding approval"],
+                    "standards_references": {
+                        "PMBOK": "Stakeholder, Planning, Uncertainty domains",
+                        "PRINCE2": "Business justification, staged management principles",
+                        "ISO 21500": "All five process groups, formally documented"
+                    }
+                },
+                {
+                    "name": "Planning & Design",
+                    "duration": "4-6 months",
+                    "activities": [
+                        "Perform detailed requirements analysis",
+                        "Design enterprise and integration architecture",
+                        "Plan data migration and transformation",
+                        "Prepare master project schedule and quality plans",
+                        "Plan for training and change management"
+                    ],
+                    "roles": ["Project Manager", "Architecture Lead", "Data Migration Specialist", "Quality Manager", "Change Manager"],
+                    "artifacts": ["Detailed Requirements Specification", "Enterprise Architecture Design", "Integration Architecture", "Data Migration Plan", "Master Project Schedule", "Quality Management Plan", "Change Management Strategy", "Training Plan"],
+                    "decision_gates": ["Gate 2 – Design approval and implementation authorization"],
+                    "standards_references": {
+                        "PMBOK": "Predictive approach with adaptive elements",
+                        "PRINCE2": "Full implementation emphasizing Business Case, Organization, Quality",
+                        "ISO 21500": "All ten knowledge areas, focusing on Risk, Quality, Stakeholder"
+                    }
+                },
+                {
+                    "name": "Implementation",
+                    "duration": "8-12 months",
+                    "activities": [
+                        "Configure and develop system components",
+                        "Integrate systems and perform testing",
+                        "Execute data migration and validation",
+                        "Conduct user acceptance and performance tests",
+                        "Perform security validation and ensure compliance",
+                        "Carry out change management and user training"
+                    ],
+                    "roles": ["Implementation Team", "Integration Specialists", "QA Team", "Security Team", "Training Team"],
+                    "artifacts": ["Configured System Components", "Integration Solutions", "Migrated Data", "Test Reports and Evidence", "Compliance Certificates", "Trained Users", "Deployment Packages"],
+                    "decision_gates": ["Gates 3a–3d – Approvals for development, testing, training, and deployment readiness"],
+                    "standards_references": {
+                        "PMBOK": "Multi-tier governance structure with steering committee",
+                        "PRINCE2": "Complete model with formal decision points",
+                        "ISO 21500": "Governance aligned with organizational structure"
+                    }
+                },
+                {
+                    "name": "Deployment & Transition",
+                    "duration": "2-4 months",
+                    "activities": [
+                        "Deploy to production and support go-live",
+                        "Monitor system performance and resolve issues",
+                        "Validate benefits realization",
+                        "Transfer knowledge and finalize project closure"
+                    ],
+                    "roles": ["Deployment Team", "Support Team", "Project Manager", "Benefits Manager"],
+                    "artifacts": ["Live Production System", "Support Documentation", "Performance Reports", "Issue Resolution Reports", "Benefits Realization Report", "Project Closure Report", "Lessons Learned Document"],
+                    "decision_gates": ["Gate 4 – Confirmation of project completion and benefits realization"],
+                    "standards_references": {
+                        "PMBOK": "Formal documentation and governance",
+                        "PRINCE2": "Defined roles, focus on products, tailored control",
+                        "ISO 21500": "Communication and stakeholder management focus"
+                    }
+                }
+            ],
+            "tailoring_rationale": "Predictive approach with adaptive elements and formal documentation. Multi-tier governance structure with steering committee and project board.",
+            "governance_model": "Complete model with formal decision points, emphasizing business case, organization, quality, risk, and change."
+        }
+    
+    elif project_type == "government_project":
+        return {
+            "phases": [
+                {
+                    "name": "Project Initiation",
+                    "duration": "1 month",
+                    "activities": [
+                        "Assess current infrastructure and establish baselines",
+                        "Identify stakeholders and confirm requirements",
+                        "Create project charter and perform initial risk review",
+                        "Mobilize team and plan procurement"
+                    ],
+                    "roles": ["Project Manager", "Infrastructure Lead", "Stakeholders", "Procurement Manager"],
+                    "artifacts": ["Infrastructure Assessment Report", "Project Charter", "Stakeholder Register", "Requirements Specification", "Risk Register", "Procurement Strategy"],
+                    "decision_gates": ["Gate 1 – Authorization and team confirmation"],
+                    "standards_references": {
+                        "PMBOK": "Planning, Project Work, Delivery, Measurement domains",
+                        "PRINCE2": "Business Case, Planning, Quality, Risk, Change themes",
+                        "ISO 21500": "Sequential process groups with defined phase boundaries"
+                    }
+                },
+                {
+                    "name": "Detailed Planning & Design",
+                    "duration": "2 months",
+                    "activities": [
+                        "Create detailed work breakdown structure (WBS)",
+                        "Prepare technical design and specifications",
+                        "Plan resources, schedules, and quality assurance",
+                        "Address safety, compliance, and vendor selection"
+                    ],
+                    "roles": ["Project Manager", "Technical Lead", "Safety Officer", "Quality Manager", "Vendor Manager"],
+                    "artifacts": ["Work Breakdown Structure", "Master Schedule", "Technical Design Documents", "Resource Management Plan", "Quality Assurance Plan", "Safety Plan", "Vendor Contracts"],
+                    "decision_gates": ["Gate 2 – Approval of design and procurement authorization"],
+                    "standards_references": {
+                        "PMBOK": "Predictive development approach, suited for fixed scope",
+                        "PRINCE2": "Sequential, stage-based approach with clear deliverables",
+                        "ISO 21500": "Scope, Schedule, Cost, Quality, Risk, Procurement knowledge areas"
+                    }
+                },
+                {
+                    "name": "Procurement & Preparation",
+                    "duration": "2 months",
+                    "activities": [
+                        "Procure and deliver equipment",
+                        "Prepare sites and testing environments",
+                        "Plan installation and train teams",
+                        "Prepare for change management"
+                    ],
+                    "roles": ["Procurement Manager", "Site Manager", "Training Coordinator", "Change Manager"],
+                    "artifacts": ["Procured Equipment and Materials", "Prepared Installation Sites", "Test Environment", "Installation Procedures", "Trained Team Members", "Change Management Plan"],
+                    "decision_gates": ["Gate 3 – Readiness confirmation for installation"],
+                    "standards_references": {
+                        "PMBOK": "Traditional management with stage gates",
+                        "PRINCE2": "Focus on technical outputs and quality documentation",
+                        "ISO 21500": "Technical oversight with operational alignment"
+                    }
+                },
+                {
+                    "name": "Implementation & Testing",
+                    "duration": "5 months",
+                    "activities": [
+                        "Install infrastructure and configure systems",
+                        "Conduct integration, performance, and security testing",
+                        "Complete documentation and user acceptance testing"
+                    ],
+                    "roles": ["Installation Team", "Configuration Specialists", "Testing Team", "Security Team", "Documentation Team"],
+                    "artifacts": ["Installed Infrastructure", "Configured Systems", "Test Results and Reports", "Performance Validation", "Security Certificates", "User Acceptance Sign-off", "Technical Documentation"],
+                    "decision_gates": ["Gates 4a–4c – Completion of installation, testing approval, and go-live authorization"],
+                    "standards_references": {
+                        "PMBOK": "Structured execution with formal documentation",
+                        "PRINCE2": "Progress monitoring and quality assurance",
+                        "ISO 21500": "Governance with technical oversight"
+                    }
+                },
+                {
+                    "name": "Deployment & Closure",
+                    "duration": "2 months",
+                    "activities": [
+                        "Execute production cutover and support setup",
+                        "Monitor performance and resolve issues",
+                        "Transfer knowledge and close the project"
+                    ],
+                    "roles": ["Deployment Team", "Support Team", "Project Manager", "Knowledge Transfer Specialist"],
+                    "artifacts": ["Operational Infrastructure", "Support Procedures", "Performance Reports", "Optimization Recommendations", "Knowledge Transfer Documentation", "Project Closure Report", "Lessons Learned"],
+                    "decision_gates": ["Gate 5 – Final handover and operational acceptance"],
+                    "standards_references": {
+                        "PMBOK": "Project closure with operational handover",
+                        "PRINCE2": "Final project closure and benefits realization",
+                        "ISO 21500": "Closing process group with operational alignment"
+                    }
+                }
+            ],
+            "tailoring_rationale": "Predictive approach suited for fixed scope and structured execution. Traditional management with stage gates and formal documentation.",
+            "governance_model": "Technical oversight with operational alignment, sequential stage-based approach with clear deliverables."
+        }
+    
+    return None
+
+
+@require_GET
+def process_diagram(request: HttpRequest) -> HttpResponse:
+    """Generate process diagrams and workflow visualizations"""
+    ensure_session(request)
+    project_type = (request.GET.get("type") or "").strip()
+    
+    if not project_type:
+        return JsonResponse({"error": "Project type required"}, status=400)
+    
+    # Get the process design
+    scenarios = {
+        "custom_software": {
+            "name": "Custom Software Development Project",
+            "context": "Well-defined requirements, <6 months, <7 team members",
+            "focus": "Lightweight process optimized for speed and flexibility",
+        },
+        "innovative_product": {
+            "name": "Innovative Product Development Project", 
+            "context": "R&D-heavy, uncertain outcomes, ~1 year duration",
+            "focus": "Hybrid adaptive process balancing innovation, iteration, and stakeholder management",
+        },
+        "government_project": {
+            "name": "Large Government Project",
+            "context": "Civil, electrical, and IT components, 2-year duration", 
+            "focus": "Comprehensive process covering governance, compliance, procurement, risk management, and reporting",
+        }
+    }
+    
+    if project_type not in scenarios:
+        return JsonResponse({"error": "Invalid project type"}, status=400)
+    
+    scenario = scenarios[project_type]
+    process_design = generate_process_design(scenario, project_type)
+    
+    if not process_design:
+        return JsonResponse({"error": "Process design not found"}, status=404)
+    
+    # Generate diagram data for Chart.js or similar visualization
+    diagram_data = {
+        "title": scenario["name"],
+        "context": scenario["context"],
+        "focus": scenario["focus"],
+        "phases": [],
+        "workflow": {
+            "nodes": [],
+            "edges": []
+        }
+    }
+    
+    # Convert phases to diagram format
+    for i, phase in enumerate(process_design["phases"]):
+        phase_data = {
+            "id": f"phase_{i+1}",
+            "name": phase["name"],
+            "duration": phase["duration"],
+            "activities": phase["activities"],
+            "roles": phase["roles"],
+            "artifacts": phase["artifacts"],
+            "decision_gates": phase["decision_gates"],
+            "position": {"x": i * 200, "y": 100},
+            "color": get_phase_color(i)
+        }
+        diagram_data["phases"].append(phase_data)
+        
+        # Add workflow nodes
+        diagram_data["workflow"]["nodes"].append({
+            "id": f"phase_{i+1}",
+            "label": phase["name"],
+            "type": "phase",
+            "data": phase_data
+        })
+        
+        # Add edges between phases
+        if i > 0:
+            diagram_data["workflow"]["edges"].append({
+                "from": f"phase_{i}",
+                "to": f"phase_{i+1}",
+                "type": "transition"
+            })
+    
+    return JsonResponse(diagram_data)
+
+
+def get_phase_color(index):
+    """Get color for phase based on index"""
+    colors = [
+        "#3B82F6",  # Blue
+        "#10B981",  # Green  
+        "#8B5CF6",  # Purple
+        "#F59E0B",  # Orange
+        "#EF4444",  # Red
+        "#06B6D4",  # Cyan
+    ]
+    return colors[index % len(colors)]
+
+
+@require_GET
+def process_document(request: HttpRequest) -> HttpResponse:
+    """Generate comprehensive Process Design Document"""
+    ensure_session(request)
+    project_type = (request.GET.get("type") or "").strip()
+    
+    if not project_type:
+        return JsonResponse({"error": "Project type required"}, status=400)
+    
+    scenarios = {
+        "custom_software": {
+            "name": "Custom Software Development Project",
+            "context": "Well-defined requirements, <6 months, <7 team members",
+            "focus": "Lightweight process optimized for speed and flexibility",
+        },
+        "innovative_product": {
+            "name": "Innovative Product Development Project", 
+            "context": "R&D-heavy, uncertain outcomes, ~1 year duration",
+            "focus": "Hybrid adaptive process balancing innovation, iteration, and stakeholder management",
+        },
+        "government_project": {
+            "name": "Large Government Project",
+            "context": "Civil, electrical, and IT components, 2-year duration", 
+            "focus": "Comprehensive process covering governance, compliance, procurement, risk management, and reporting",
+        }
+    }
+    
+    if project_type not in scenarios:
+        return JsonResponse({"error": "Invalid project type"}, status=400)
+    
+    scenario = scenarios[project_type]
+    process_design = generate_process_design(scenario, project_type)
+    
+    if not process_design:
+        return JsonResponse({"error": "Process design not found"}, status=404)
+    
+    # Generate comprehensive document
+    document = {
+        "title": f"Process Design Document: {scenario['name']}",
+        "metadata": {
+            "project_type": project_type,
+            "scenario_name": scenario["name"],
+            "context": scenario["context"],
+            "focus": scenario["focus"],
+            "generated_date": "2025-01-27",
+            "standards_referenced": ["PMBOK Guide 7th Edition", "PRINCE2 2023", "ISO 21500:2021", "ISO 21502:2020"]
+        },
+        "executive_summary": {
+            "tailoring_rationale": process_design["tailoring_rationale"],
+            "governance_model": process_design["governance_model"],
+            "key_characteristics": get_key_characteristics(project_type)
+        },
+        "process_phases": process_design["phases"],
+        "standards_mapping": generate_standards_mapping(process_design["phases"]),
+        "tailoring_decisions": generate_tailoring_decisions(project_type),
+        "implementation_guidance": generate_implementation_guidance(project_type)
+    }
+    
+    return JsonResponse(document)
+
+
+def get_key_characteristics(project_type):
+    """Get key characteristics for the project type"""
+    characteristics = {
+        "custom_software": [
+            "Agile methodology with short sprints",
+            "Continuous integration and deployment",
+            "Self-organizing teams",
+            "Minimal documentation overhead",
+            "Rapid feedback cycles"
+        ],
+        "innovative_product": [
+            "Hybrid waterfall-agile approach",
+            "Multiple validation gates",
+            "Stakeholder-centric design",
+            "Risk-driven decision making",
+            "Flexible stage boundaries"
+        ],
+        "government_project": [
+            "Formal governance structure",
+            "Comprehensive compliance framework",
+            "Multi-tier approval processes",
+            "Detailed documentation requirements",
+            "Audit trail maintenance"
+        ]
+    }
+    return characteristics.get(project_type, [])
+
+
+def generate_standards_mapping(phases):
+    """Generate mapping of phases to standards"""
+    mapping = {
+        "PMBOK": [],
+        "PRINCE2": [],
+        "ISO 21500": [],
+        "ISO 21502": []
+    }
+    
+    for phase in phases:
+        for standard, reference in phase["standards_references"].items():
+            mapping[standard].append({
+                "phase": phase["name"],
+                "reference": reference,
+                "activities": phase["activities"],
+                "artifacts": phase["artifacts"]
+            })
+    
+    return mapping
+
+
+def generate_tailoring_decisions(project_type):
+    """Generate tailoring decisions and rationale"""
+    decisions = {
+        "custom_software": [
+            {
+                "decision": "Adopt Scrum framework",
+                "rationale": "Well-suited for small teams with defined requirements",
+                "standards_basis": "PMBOK Agile practices, PRINCE2 stage boundaries adapted for sprints"
+            },
+            {
+                "decision": "Minimize formal documentation",
+                "rationale": "Focus on working software over comprehensive documentation",
+                "standards_basis": "PMBOK principle of value delivery, ISO 21500 quality management"
+            },
+            {
+                "decision": "Continuous integration/deployment",
+                "rationale": "Enable rapid feedback and risk reduction",
+                "standards_basis": "PMBOK quality management, PRINCE2 managing product delivery"
+            }
+        ],
+        "innovative_product": [
+            {
+                "decision": "Hybrid waterfall-agile approach",
+                "rationale": "Balance structured planning with iterative development",
+                "standards_basis": "PMBOK adaptive approaches, PRINCE2 stage boundaries, ISO 21500 lifecycle management"
+            },
+            {
+                "decision": "Multiple validation gates",
+                "rationale": "Manage uncertainty through frequent validation",
+                "standards_basis": "PMBOK risk management, PRINCE2 stage boundaries, ISO 21500 quality assurance"
+            },
+            {
+                "decision": "Stakeholder-centric design",
+                "rationale": "Ensure innovation aligns with market needs",
+                "standards_basis": "PMBOK stakeholder management, PRINCE2 business case, ISO 21500 stakeholder analysis"
+            }
+        ],
+        "government_project": [
+            {
+                "decision": "Formal governance structure",
+                "rationale": "Ensure compliance and accountability",
+                "standards_basis": "PMBOK governance, PRINCE2 project board, ISO 21500 governance framework"
+            },
+            {
+                "decision": "Comprehensive compliance framework",
+                "rationale": "Meet regulatory and audit requirements",
+                "standards_basis": "PMBOK compliance management, ISO 21500 governance and compliance"
+            },
+            {
+                "decision": "Multi-tier approval processes",
+                "rationale": "Ensure proper oversight and risk management",
+                "standards_basis": "PRINCE2 stage boundaries, PMBOK change management, ISO 21500 decision gates"
+            }
+        ]
+    }
+    return decisions.get(project_type, [])
+
+
+def generate_implementation_guidance(project_type):
+    """Generate implementation guidance"""
+    guidance = {
+        "custom_software": {
+            "team_structure": "Cross-functional team of 5-7 members including developers, testers, and product owner",
+            "tools_recommended": ["Jira/Confluence", "Git", "CI/CD pipeline", "Slack/Teams"],
+            "success_metrics": ["Sprint velocity", "Code quality metrics", "Customer satisfaction", "Time to market"],
+            "risks": ["Scope creep", "Technical debt", "Team burnout", "Integration issues"],
+            "mitigation_strategies": ["Regular sprint reviews", "Code reviews", "Sustainable pace", "Continuous integration"]
+        },
+        "innovative_product": {
+            "team_structure": "Multi-disciplinary team including researchers, designers, developers, and business analysts",
+            "tools_recommended": ["Design thinking tools", "Prototyping software", "Project management platform", "Analytics tools"],
+            "success_metrics": ["Innovation index", "Market validation", "User adoption", "Revenue potential"],
+            "risks": ["Market uncertainty", "Technical feasibility", "Stakeholder alignment", "Resource constraints"],
+            "mitigation_strategies": ["Market research", "Proof of concept", "Regular stakeholder reviews", "Agile resource allocation"]
+        },
+        "government_project": {
+            "team_structure": "Large multi-disciplinary team with clear hierarchy and specialized roles",
+            "tools_recommended": ["Enterprise PM software", "Document management system", "Compliance tracking", "Reporting tools"],
+            "success_metrics": ["Compliance score", "Schedule adherence", "Budget control", "Quality metrics"],
+            "risks": ["Regulatory changes", "Vendor issues", "Scope changes", "Resource availability"],
+            "mitigation_strategies": ["Regular compliance reviews", "Vendor management", "Change control", "Resource planning"]
+        }
+    }
+    return guidance.get(project_type, {})
 
 # Create your views here.
